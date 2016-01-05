@@ -1,9 +1,6 @@
 require 'active_record'
 require 'csv'
 
-PATH_TO_DATA = './billboard/'
-PATH_TO_TEST = './billboard/1950.csv'
-
 def establish_db_connection
   ActiveRecord::Base.establish_connection(
     :adapter => 'postgresql',
@@ -35,25 +32,31 @@ def migrate_db
   CreateChartSinglesTable.migrate(:up)
 end
 
-def import_csv(table)
+def import_csv(table, year)
   table.each do |row|
     single = ChartSingle.new
     single.title = row[2]
     single.artist = row[1]
     single.position = row[0]
-    single.year = 1950
+    single.year = year
 
     single.save
   end
 end
 
-def import_data
-  table = CSV.read(PATH_TO_TEST)[1 .. -1]
+def import_all_data
+  Dir.chdir("billboard")
+  Dir.glob("*.csv") do |file|
+    table = CSV.read(file, encoding: "iso-8859-1:UTF-8")[1 .. -1]
+    year = file[0..-5]
+    import_csv table, year
+  end
+  
   #puts "table"
   #puts table
-  import_csv table
+  #import_csv table
 end
 
 establish_db_connection
-#migrate_db
-import_data
+migrate_db
+import_all_data
