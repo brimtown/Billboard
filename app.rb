@@ -47,14 +47,12 @@ end
 def import_all_data
   Dir.chdir("billboard")
   Dir.glob("*.csv") do |file|
+    #Non-ASCII character in some of the files necessitated the encoding parameter
     table = CSV.read(file, encoding: "iso-8859-1:UTF-8")[1 .. -1]
+    #Trim the .csv from the filename to get the year
     year = file[0..-5]
     import_csv table, year
   end
-  
-  #puts "table"
-  #puts table
-  #import_csv table
 end
 
 establish_db_connection
